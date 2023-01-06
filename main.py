@@ -63,11 +63,6 @@ def read_root():
 def read_item(item_id: int, q: Union[str, None] = None):
     return {"item_id": item_id, "q": q}
 
-@app.post("/notes/{note_id}")
-async def create_note(note_id: int, text1: Union[str, None] = None):
-    #query = notes.insert().values(text=text1, completed=True)
-    #last_record_id = await database.execute(query)
-    return "success"
 
 
 
