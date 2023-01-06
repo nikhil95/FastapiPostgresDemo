@@ -11,6 +11,8 @@ from fastapi.middleware.gzip import GZipMiddleware
 from pydantic import BaseModel
 import os
 import urllib
+import random
+
 
 host_server = os.environ.get('host_server', 'localhost')
 db_server_port = urllib.parse.quote_plus(str(os.environ.get('db_server_port', '5432')))
@@ -27,7 +29,7 @@ metadata = sqlalchemy.MetaData()
 projects = sqlalchemy.Table(
     "projects",
     metadata,
-    sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True, autoincrement=True),
+    sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
     sqlalchemy.Column("name", sqlalchemy.String),
     sqlalchemy.Column("completed", sqlalchemy.Boolean),
 )
@@ -59,9 +61,10 @@ def read_root():
 def read_item(item_id: int, q: Union[str, None] = None):
     return {"item_id": item_id, "q": q}
 
-@app.post("/projects/", response_model=Project, status_code = status.HTTP_201_CREATED)
+@app.post("/project/", response_model=Project, status_code = status.HTTP_201_CREATED)
 async def create_project(project: ProjectIn):
-    query = projects.insert().values(name=project.name, completed=project.completed)
+    num = random.random()
+    query = projects.insert().values(id=num ,name=project.name, completed=project.completed)
     last_record_id = await database.execute(query)
     return {**project.dict(), "id": last_record_id}
 
