@@ -42,14 +42,7 @@ engine = sqlalchemy.create_engine(
 
 metadata.create_all(engine)
 
-class NoteIn(BaseModel):
-    text: str
-    completed: bool
 
-class Note(BaseModel):
-    id: int
-    text: str
-    completed: bool
         
 app = FastAPI(title="REST API using FastAPI PostgreSQL Async EndPoints")
 app.add_middleware(
@@ -70,22 +63,12 @@ def read_root():
 def read_item(item_id: int, q: Union[str, None] = None):
     return {"item_id": item_id, "q": q}
 
-@app.post("/notes/", response_model=Note, status_code = status.HTTP_201_CREATED)
-async def create_note(note: NoteIn):
-    #query = notes.insert().values(text=note.text, completed=note.completed)
-    #last_record_id = await database.execute(query)
-    #return {**note.dict(), "id": last_record_id}
+@app.post("/Notes/{note_id}")
+async def create_note(note_id: int, text: Union[str, None] = None):
+    query = notes.insert().values(id=note_id,text=text, completed=True)
+    last_record_id = await database.execute(query)
     return "success"
 
-@app.put("/notes/{note_id}/", response_model=Note, status_code = status.HTTP_200_OK)
-async def update_note(note_id: int, payload: NoteIn):
-    query = notes.update().where(notes.c.id == note_id).values(text=payload.text, completed=payload.completed)
-    await database.execute(query)
-    return {**payload.dict(), "id": note_id}
 
-@app.get("/notes/", response_model=List[Note], status_code = status.HTTP_200_OK)
-async def read_notes(skip: int = 0, take: int = 20):
-    query = notes.select().offset(skip).limit(take)
-    return await database.fetch_all(query)
 
 
