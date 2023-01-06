@@ -27,7 +27,7 @@ metadata = sqlalchemy.MetaData()
 projects = sqlalchemy.Table(
     "projects",
     metadata,
-    sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
+    sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True, autoincrement=True),
     sqlalchemy.Column("name", sqlalchemy.String),
     sqlalchemy.Column("completed", sqlalchemy.Boolean),
 )
