@@ -44,7 +44,7 @@ metadata.create_all(engine)
 
 
         
-app = FastAPI(title="REST API using FastAPI PostgreSQL Async EndPoints")
+app = FastAPI(title="FastAPI Demo")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
