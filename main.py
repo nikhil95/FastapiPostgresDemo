@@ -38,6 +38,15 @@ engine = sqlalchemy.create_engine(
 )
 metadata.create_all(engine)
 
+class ProjectIn(BaseModel):
+    name: str
+    completed: bool
+
+class Project(BaseModel):
+    id: int
+    name: str
+    completed: bool
+        
 app = FastAPI()
 
 
@@ -49,3 +58,15 @@ def read_root():
 @app.get("/items/{item_id}")
 def read_item(item_id: int, q: Union[str, None] = None):
     return {"item_id": item_id, "q": q}
+
+@app.post("/projects/", response_model=Project, status_code = status.HTTP_201_CREATED)
+async def create_project(project: ProjectIn):
+    query = projects.insert().values(name=project.name, completed=project.completed)
+    last_record_id = await database.execute(query)
+    return {**project.dict(), "id": last_record_id}
+
+@app.get("/projects/", response_model=List[Project], status_code = status.HTTP_200_OK)
+async def read_projects(skip: int = 0, take: int = 20):
+    query = projects.select().offset(skip).limit(take)
+    return await database.fetch_all(query)
+
