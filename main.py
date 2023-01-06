@@ -26,11 +26,11 @@ database = databases.Database(DATABASE_URL)
 
 metadata = sqlalchemy.MetaData()
 
-projects = sqlalchemy.Table(
-    "projects",
+notes = sqlalchemy.Table(
+    "notes",
     metadata,
     sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
-    sqlalchemy.Column("name", sqlalchemy.String),
+    sqlalchemy.Column("text", sqlalchemy.String),
     sqlalchemy.Column("completed", sqlalchemy.Boolean),
 )
 
@@ -38,15 +38,17 @@ engine = sqlalchemy.create_engine(
     #DATABASE_URL, connect_args={"check_same_thread": False}
     DATABASE_URL, pool_size=3, max_overflow=0
 )
+
+
 metadata.create_all(engine)
 
-class ProjectIn(BaseModel):
-    name: str
+class NoteIn(BaseModel):
+    text: str
     completed: bool
 
-class Project(BaseModel):
+class Note(BaseModel):
     id: int
-    name: str
+    text: str
     completed: bool
         
 app = FastAPI()
@@ -61,15 +63,21 @@ def read_root():
 def read_item(item_id: int, q: Union[str, None] = None):
     return {"item_id": item_id, "q": q}
 
-@app.post("/project/", response_model=Project, status_code = status.HTTP_201_CREATED)
-async def create_project(project: ProjectIn):
-    num = random.random()
-    query = projects.insert().values(id=num ,name=project.name, completed=project.completed)
+@app.post("/notes/", response_model=Note, status_code = status.HTTP_201_CREATED)
+async def create_note(note: NoteIn):
+    query = notes.insert().values(text=note.text, completed=note.completed)
     last_record_id = await database.execute(query)
-    return {**project.dict(), "id": last_record_id}
+    return {**note.dict(), "id": last_record_id}
 
-@app.get("/projects/", response_model=List[Project], status_code = status.HTTP_200_OK)
-async def read_projects(skip: int = 0, take: int = 20):
-    query = projects.select().offset(skip).limit(take)
+@app.put("/notes/{note_id}/", response_model=Note, status_code = status.HTTP_200_OK)
+async def update_note(note_id: int, payload: NoteIn):
+    query = notes.update().where(notes.c.id == note_id).values(text=payload.text, completed=payload.completed)
+    await database.execute(query)
+    return {**payload.dict(), "id": note_id}
+
+@app.get("/notes/", response_model=List[Note], status_code = status.HTTP_200_OK)
+async def read_notes(skip: int = 0, take: int = 20):
+    query = notes.select().offset(skip).limit(take)
     return await database.fetch_all(query)
+
 
