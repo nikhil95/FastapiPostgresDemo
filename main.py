@@ -75,7 +75,7 @@ async def create_note(note: NoteIn):
     #query = notes.insert().values(text=note.text, completed=note.completed)
     #last_record_id = await database.execute(query)
     #return {**note.dict(), "id": last_record_id}
-    return note.text
+    return "success"
 
 @app.put("/notes/{note_id}/", response_model=Note, status_code = status.HTTP_200_OK)
 async def update_note(note_id: int, payload: NoteIn):
